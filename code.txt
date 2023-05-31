@@ -1,0 +1,87 @@
+int tempPin = 1;
+int soilPin = 0;
+int soilValue = 0;
+int motorPin = 7;
+int pirPin = 13;
+int cm = 0;
+float soilPorcent;
+float tensao;
+float temp;
+float tempC;
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(12,11,5,4,3,2);
+
+long readUltrasonicDistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT);  // Clear the trigger
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigger pin to HIGH state for 10 microseconds
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+  pinMode(echoPin, INPUT);
+  // Reads the echo pin, and returns the sound wave travel time in microseconds
+  return pulseIn(echoPin, HIGH);
+  //o trigger envia um pulso de sinal que bate e volta
+  //o echo é retorno desse pulso de sinal, definindo,assim, a distancia
+}
+
+void setup()
+{
+  lcd.begin(16,2);
+  pinMode(motorPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  	temp = analogRead(tempPin);
+  	tensao = temp * 5.0;
+  	tensao /= 1023;
+  	tempC = (tensao - 0.5)*100;
+  	soilValue = analogRead(soilPin);
+  	soilPorcent = ((soilValue/876.00)*100);
+  	cm = 0.01723 * readUltrasonicDistance(13, 13);
+  	Serial.println(cm);
+  
+  	lcd.setCursor(0,0);
+  	lcd.print("Temperatura");
+  	lcd.setCursor(0,1);
+  	lcd.print(tempC);
+  	lcd.print("C");
+  
+  	delay(2000);
+  	lcd.clear();
+  
+  	lcd.setCursor(0,0);
+  	lcd.print("Humidade do solo");
+  	lcd.setCursor(0,1);
+  	lcd.print(soilPorcent);
+  	lcd.print("%");
+  	delay(2000);
+  	lcd.clear();
+  
+  	if(soilPorcent < 50){
+  		lcd.setCursor(0,0);
+      	lcd.print("Humidade baixa");
+      	digitalWrite(motorPin, HIGH);
+      	lcd.setCursor(0,1);
+  		lcd.print("Motor ligado");
+      	digitalWrite(motorPin, HIGH);
+      	delay(2000);
+     	lcd.clear();
+  	}
+  	else{
+    	lcd.setCursor(0,0);
+      	lcd.print("Humidade boa");
+    	lcd.setCursor(0,1);
+      	lcd.print("Motor desligado");
+        digitalWrite(motorPin, LOW);
+        delay(2000);
+      	lcd.clear();
+	}
+  
+}
